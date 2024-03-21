@@ -1,2 +1,3 @@
 # browser-api
-An HTTP API that drives a web browser.
+
+This repo hosts a small Node.js app that provides an HTTP API for controlling a web browser.
