@@ -25,7 +25,6 @@ export class BrowserSession {
   #createdAt: Date;
   #history: BrowserSessionHistoryItem[];
   #historyLimit: number;
-  #blockedRequests: Set<string>;
 
   constructor({
     allowedHosts,
@@ -39,7 +38,6 @@ export class BrowserSession {
     this.#createdAt = createdAt ? new Date(createdAt) : new Date();
     this.#history = [];
     this.#historyLimit = historyLimit;
-    this.#blockedRequests = new Set();
   }
 
   get browserTab(): BrowserTab {
@@ -56,10 +54,6 @@ export class BrowserSession {
         });
       },
     }));
-  }
-
-  get blockedRequests(): string[] {
-    return Array.from(this.#blockedRequests);
   }
 
   get createdAt(): Date {
