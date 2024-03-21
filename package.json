@@ -1,9 +1,8 @@
 {
-  "name": "browser",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "browser-api",
+  "version": "0.0.1",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/express": "^4.17.21",
     "prettier": "^3.2.5",
