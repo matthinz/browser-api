@@ -1,3 +1,4 @@
+import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { Browser, BrowserCommand, BrowserTab } from "./browser/types.js";
 
@@ -6,6 +7,7 @@ type BrowserSessionOptions = {
   createdAt?: Date;
   allowedHosts?: string[];
   historyLimit: number;
+  workingDir: string;
 };
 
 export type BrowserSessionHistoryItem = { at: number } & (
@@ -25,12 +27,14 @@ export class BrowserSession {
   #createdAt: Date;
   #history: BrowserSessionHistoryItem[];
   #historyLimit: number;
+  #workingDir: string;
 
   constructor({
     allowedHosts,
     browser,
     createdAt,
     historyLimit,
+    workingDir,
   }: BrowserSessionOptions) {
     this.#id = randomUUID();
     this.#allowedHosts = allowedHosts ? [...allowedHosts] : undefined;
@@ -38,6 +42,7 @@ export class BrowserSession {
     this.#createdAt = createdAt ? new Date(createdAt) : new Date();
     this.#history = [];
     this.#historyLimit = historyLimit;
+    this.#workingDir = workingDir;
   }
 
   get browserTab(): BrowserTab {
@@ -80,6 +85,12 @@ export class BrowserSession {
         }),
       Promise.resolve(),
     );
+  }
+
+  async takeScreenshot(): Promise<string> {
+    const filename = path.join(this.#workingDir, `screenshot-${this.id}.png`);
+    await this.browserTab.screenshot(filename);
+    return filename;
   }
 
   private addToHistory(item: BrowserSessionHistoryItem) {

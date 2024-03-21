@@ -236,6 +236,15 @@ class PuppeteerBrowserTab implements BrowserTab {
     });
   }
 
+  screenshot(filename: string): Promise<void> {
+    return this.usePage(async (page) => {
+      await page.screenshot({
+        fullPage: true,
+        path: filename,
+      });
+    });
+  }
+
   type(selector: string, value: string | number): Promise<void> {
     return this.usePage(async (page) => {
       await page.type(selector, String(value));

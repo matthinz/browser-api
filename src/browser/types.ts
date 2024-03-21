@@ -79,6 +79,8 @@ export interface BrowserTab {
    */
   navigate(url: URL): Promise<void>;
 
+  screenshot(filename: string): Promise<void>;
+
   type(selector: string, value: string | number): Promise<void>;
 
   /**

@@ -16,6 +16,7 @@ type CreateSessionRouteOptions = {
   maxSessions: number;
   sessions: BrowserSession[];
   sessionHistoryLimit: number;
+  workingDir: string;
 };
 
 export const createSessionRoute = ({
@@ -24,6 +25,7 @@ export const createSessionRoute = ({
   maxSessions,
   sessions,
   sessionHistoryLimit,
+  workingDir,
 }: CreateSessionRouteOptions) =>
   createJsonRoute({
     paramsSchema: z.any().optional(),
@@ -44,6 +46,7 @@ export const createSessionRoute = ({
         ...(body ?? {}),
         browser,
         historyLimit: sessionHistoryLimit,
+        workingDir,
       });
 
       sessions.push(session);

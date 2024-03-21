@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Browsers? Browsers!</title>
+  </head>
+  <body>
+    <% for (const session of sessions) { %>
+      <div>
+        <span><%= session.id %></span>
+        <img style="max-width: 200px;" src="/sessions/<%= session.id %>/screenshot">
+      </div>
+    <% } %>
+  </body>
+</html>

@@ -1,4 +1,7 @@
 import express, { json } from "express";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { createSessionRoute } from "./routes/create-session.js";
 import { BrowserSession } from "./browser-session.js";
 import { navigateRoute } from "./routes/navigate.js";
@@ -8,14 +11,18 @@ import { Logger, createConsoleLogger } from "./logger.js";
 import { deleteSessionRoute } from "./routes/delete-session.js";
 import { getSessionRoute } from "./routes/get-session.js";
 import { commandSessionRoute } from "./routes/command-session.js";
+import { homeRoute } from "./routes/home.js";
+import { sessionScreenshotRoute } from "./routes/session-screenshot.js";
 
 type CreateAppOptions = {
   browserTabMaxIdleTimeInMs?: number;
   cleanupIntervalInMs?: number;
   maxSessions?: number;
   port?: number;
+  screenshotCacheDurationInSeconds?: number;
   sessionHistoryLimit?: number;
   verbose?: boolean;
+  workingDir?: string;
 };
 
 type ScheduleCleanupOptions = {
@@ -26,15 +33,20 @@ type ScheduleCleanupOptions = {
   sessions: BrowserSession[];
 };
 
+type RunningApp = {
+  port: number;
+};
+
 const DEFAULT_CLEANUP_INTERVAL = 10 * 1000;
 const DEFAULT_BROWSER_TAB_MAX_IDLE_TIME = 3 * 60 * 1000;
 const DEFAULT_MAX_SESSIONS = 10;
 const DEFAULT_PORT = 7890;
+const DEFAULT_SCREENSHOT_CACHE_DURATION_IN_SECONDS = 30;
 const DEFAULT_SESSION_HISTORY_LIMIT = 1000;
 
-export function createApp(
+export async function createApp(
   options: CreateAppOptions = {},
-): () => Promise<number> {
+): Promise<() => Promise<RunningApp>> {
   const port =
     [options.port, parseInt(process.env.PORT ?? "", 10)].find(
       (p) => p && !isNaN(p),
@@ -44,7 +56,9 @@ export function createApp(
     cleanupIntervalInMs = DEFAULT_CLEANUP_INTERVAL,
     browserTabMaxIdleTimeInMs = DEFAULT_BROWSER_TAB_MAX_IDLE_TIME,
     maxSessions = DEFAULT_MAX_SESSIONS,
+    screenshotCacheDurationInSeconds = DEFAULT_SCREENSHOT_CACHE_DURATION_IN_SECONDS,
     sessionHistoryLimit = DEFAULT_SESSION_HISTORY_LIMIT,
+    workingDir = await fs.mkdtemp(path.join(os.tmpdir(), "browser-api-")),
   } = options;
 
   const logger = createConsoleLogger(options);
@@ -55,7 +69,19 @@ export function createApp(
 
   const app = express();
 
+  app.set("view engine", "ejs");
+  app.set("views", path.join(import.meta.dirname, "views"));
+
   app.use(json());
+
+  app.get(
+    "/",
+    homeRoute({
+      logger,
+      sessions,
+      workingDir,
+    }),
+  );
 
   app.get(
     "/sessions/:id",
@@ -69,6 +95,15 @@ export function createApp(
     "/sessions/:id/command",
     commandSessionRoute({
       logger,
+      sessions,
+    }),
+  );
+
+  app.get(
+    "/sessions/:id/screenshot",
+    sessionScreenshotRoute({
+      logger,
+      screenshotCacheDurationInSeconds,
       sessions,
     }),
   );
@@ -97,6 +132,7 @@ export function createApp(
       maxSessions,
       sessionHistoryLimit,
       sessions,
+      workingDir,
     }),
   );
 
@@ -109,9 +145,9 @@ export function createApp(
   });
 
   return () =>
-    new Promise<number>((resolve) => {
+    new Promise<RunningApp>((resolve) => {
       app.listen(port, () => {
-        resolve(port);
+        resolve({ port });
       });
     });
 }

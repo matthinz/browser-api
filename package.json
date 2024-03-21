@@ -10,10 +10,14 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
+    "ejs": "^3.1.9",
     "express": "^4.18.3",
     "puppeteer": "^22.4.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "zod": "^3.22.4"
+  },
+  "scripts": {
+    "start": "node --loader ts-node/esm --no-warnings src/index.ts"
   }
 }

@@ -17,11 +17,11 @@ async function run(args: string[]) {
     },
   });
 
-  const start = createApp({
+  const start = await createApp({
     ...parsed.values,
   });
 
-  const port = await start();
+  const { port } = await start();
 
   console.log(`Listening on http://localhost:${port}`);
 }
