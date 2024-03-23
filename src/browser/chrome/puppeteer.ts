@@ -1,4 +1,9 @@
-import { Browser as PuppeteerBrowser, Page, connect } from "puppeteer";
+import {
+  Browser as PuppeteerBrowser,
+  Page,
+  connect,
+  BrowserContext,
+} from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import stealthPlugin from "puppeteer-extra-plugin-stealth";
 import { Logger } from "../../logger.js";
@@ -47,7 +52,9 @@ export class PuppeteerBrowserImpl implements Browser {
     };
 
     return new PuppeteerBrowserTab(finalOptions, () =>
-      this.getPuppeteerBrowser().then((browser) => browser.newPage()),
+      this.getPuppeteerBrowser().then((browser) =>
+        browser.createBrowserContext(),
+      ),
     );
   }
 
@@ -70,15 +77,25 @@ export class PuppeteerBrowserImpl implements Browser {
 
 class PuppeteerBrowserTab implements BrowserTab {
   #options: BrowserTabOptions;
+  #contextFactory: () => Promise<BrowserContext>;
+  #contextPromise: Promise<BrowserContext> | undefined;
   #pageFactory: () => Promise<Page>;
   #pagePromise: Promise<Page> | undefined;
   #page: Page | undefined;
   #thingsInFlight: number = 0;
   #lastActionAt: Date = new Date();
 
-  constructor(options: BrowserTabOptions, pageFactory: () => Promise<Page>) {
+  constructor(
+    options: BrowserTabOptions,
+    contextFactory: () => Promise<BrowserContext>,
+  ) {
     this.#options = Object.assign({}, DEFAULT_BROWSER_TAB_OPTIONS, options);
-    this.#pageFactory = pageFactory;
+    this.#contextFactory = contextFactory;
+    this.#pageFactory = async () => {
+      this.#contextPromise = this.#contextPromise ?? this.#contextFactory();
+      const context = await this.#contextPromise;
+      return context.newPage();
+    };
   }
 
   get isBusy(): boolean {
