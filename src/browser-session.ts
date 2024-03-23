@@ -17,6 +17,12 @@ export type BrowserSessionHistoryItem = { at: number } & (
   | {
       urlBlocked: URL;
     }
+  | {
+      consoleMessage: {
+        type: string;
+        text: string;
+      };
+    }
 );
 
 export class BrowserSession {
@@ -52,6 +58,15 @@ export class BrowserSession {
 
     return (this.#browserTab = this.#browser.newTab({
       allowedHosts: this.#allowedHosts,
+      onConsoleMessage: (type, text) => {
+        this.addToHistory({
+          at: Date.now(),
+          consoleMessage: {
+            type,
+            text,
+          },
+        });
+      },
       onRequestBlocked: (url) => {
         this.addToHistory({
           at: Date.now(),

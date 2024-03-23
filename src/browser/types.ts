@@ -20,6 +20,10 @@ export interface BrowserTabOptions {
   readonly allowedHosts?: Iterable<string>;
   readonly logger: Logger;
   readonly timezone?: string;
+  readonly onConsoleMessage?: (
+    type: "log" | "debug" | "error" | "info" | "warn",
+    text: string,
+  ) => void;
   readonly onRequestBlocked?: (url: URL) => void;
   readonly viewport?: Partial<BrowserViewport>;
 }

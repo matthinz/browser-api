@@ -298,6 +298,26 @@ class PuppeteerBrowserTab implements BrowserTab {
       this.logger.debug("All hosts allowed");
     }
 
+    const { onConsoleMessage } = this.#options;
+    if (onConsoleMessage) {
+      page.on("console", (event) => {
+        const type = event.type();
+
+        if (type !== "log" && type !== "error") {
+          return;
+        }
+
+        const text = event.text();
+
+        if (type === "error" && text.endsWith(": net::ERR_FAILED")) {
+          // These are probably blocked requests, just noise?
+          return;
+        }
+
+        setImmediate(onConsoleMessage, type, event.text());
+      });
+    }
+
     return page;
   }
 
@@ -310,6 +330,18 @@ class PuppeteerBrowserTab implements BrowserTab {
       allowedHostsArray = allowedHostsArray ?? [...allowedHosts];
 
       const requestUrl = new URL(request.url());
+
+      if (requestUrl.protocol === "data:") {
+        // Allow data: urls
+        request.continue();
+        return;
+      }
+
+      if (requestUrl.protocol !== "http:" && requestUrl.protocol !== "https:") {
+        // No gopher requests
+        request.abort();
+        return;
+      }
 
       const shouldBlock =
         allowedHosts != null &&
