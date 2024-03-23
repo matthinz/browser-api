@@ -1,13 +1,13 @@
 import { Browser as PuppeteerBrowser, Page, connect } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import stealthPlugin from "puppeteer-extra-plugin-stealth";
+import { Logger } from "../../logger.js";
 import {
   Browser,
   BrowserLink,
   BrowserTab,
   BrowserTabOptions,
 } from "../types.js";
-import { Logger } from "../../logger.js";
 
 // @ts-ignore
 puppeteer.use(stealthPlugin());

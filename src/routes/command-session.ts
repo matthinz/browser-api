@@ -1,35 +1,39 @@
 import { z } from "zod";
 import { BrowserSession } from "../browser-session.js";
-import { HttpStatusError, createJsonRoute } from "./utils.js";
-import { getSessionById } from "../sessions.js";
 import { BrowserCommandSchema } from "../browser/schema.js";
 import { Logger } from "../logger.js";
+import { getSessionById } from "../sessions.js";
+import { HttpNotFoundError } from "../utils/http-errors.js";
+import { RouteParams, createJsonRoute } from "../utils/routes.js";
 
 type CommandSessionRouteOptions = {
   logger: Logger;
   sessions: BrowserSession[];
 };
 
-const bodySchema = z.object({
+export const BODY_SCHEMA = z.object({
   commands: z.array(BrowserCommandSchema),
 });
 
-const paramsSchema = z.object({
+export const PARAMS_SCHEMA = {
   id: z.string(),
-});
+};
+
+type Body = z.infer<typeof BODY_SCHEMA>;
+type Params = RouteParams<typeof PARAMS_SCHEMA>;
 
 export function commandSessionRoute({
   logger,
   sessions,
 }: CommandSessionRouteOptions) {
   return createJsonRoute({
-    bodySchema,
-    paramsSchema,
+    bodySchema: BODY_SCHEMA,
+    paramsSchema: PARAMS_SCHEMA,
     logger,
-    async handler({ id }, { commands }) {
+    async handler({ id }: Params, { commands }: Body) {
       const session = getSessionById(sessions, id);
       if (!session) {
-        throw new HttpStatusError(404, "not_found", "Session not found");
+        throw new HttpNotFoundError();
       }
 
       await session.execute(commands);

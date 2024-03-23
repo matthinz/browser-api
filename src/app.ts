@@ -2,16 +2,16 @@ import express, { json } from "express";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { createSessionRoute } from "./routes/create-session.js";
 import { BrowserSession } from "./browser-session.js";
-import { navigateRoute } from "./routes/navigate.js";
 import { createGoogleChromeBrowser } from "./browser/chrome/index.js";
 import { Browser } from "./browser/types.js";
 import { Logger, createConsoleLogger } from "./logger.js";
+import { commandSessionRoute } from "./routes/command-session.js";
+import { createSessionRoute } from "./routes/create-session.js";
 import { deleteSessionRoute } from "./routes/delete-session.js";
 import { getSessionRoute } from "./routes/get-session.js";
-import { commandSessionRoute } from "./routes/command-session.js";
 import { homeRoute } from "./routes/home.js";
+import { navigateRoute } from "./routes/navigate.js";
 import { sessionScreenshotRoute } from "./routes/session-screenshot.js";
 
 type CreateAppOptions = {

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BrowserCommandSchema } from "./schema.js";
 import { Logger } from "../logger.js";
+import { BrowserCommandSchema } from "./schema.js";
 
 export type BrowserCommand = z.infer<typeof BrowserCommandSchema>;
 

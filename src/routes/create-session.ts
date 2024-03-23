@@ -1,14 +1,17 @@
 import { z } from "zod";
 import { BrowserSession } from "../browser-session.js";
 import { Browser } from "../browser/types.js";
-import { HttpStatusError, createJsonRoute } from "./utils.js";
 import { Logger } from "../logger.js";
+import { HttpBadRequestError } from "../utils/http-errors.js";
+import { createJsonRoute } from "../utils/routes.js";
 
-const BodySchema = z
+export const BODY_SCHEMA = z
   .object({
     allowedHosts: z.array(z.string()).optional(),
   })
   .optional();
+
+type Body = z.infer<typeof BODY_SCHEMA>;
 
 type CreateSessionRouteOptions = {
   browser: Browser;
@@ -28,13 +31,11 @@ export const createSessionRoute = ({
   workingDir,
 }: CreateSessionRouteOptions) =>
   createJsonRoute({
-    paramsSchema: z.any().optional(),
-    bodySchema: BodySchema,
+    bodySchema: BODY_SCHEMA,
     logger,
-    async handler(_params, body) {
+    async handler(body: Body) {
       if (sessions.length >= maxSessions) {
-        throw new HttpStatusError(
-          400,
+        throw new HttpBadRequestError(
           "too_many_sessions",
           "Too many sessions active.",
         );

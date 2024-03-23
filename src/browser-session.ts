@@ -1,5 +1,5 @@
-import path from "node:path";
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import { Browser, BrowserCommand, BrowserTab } from "./browser/types.js";
 
 type BrowserSessionOptions = {

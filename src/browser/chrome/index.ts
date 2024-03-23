@@ -1,13 +1,13 @@
-import fs from "fs/promises";
-import { platform } from "node:os";
-import { spawn } from "node:child_process";
-import path from "node:path";
-import { PuppeteerBrowserImpl } from "./puppeteer.js";
 import { ChildProcess } from "child_process";
-import { Browser } from "../types.js";
+import fs from "fs/promises";
+import { spawn } from "node:child_process";
+import { platform } from "node:os";
+import path from "node:path";
 import { z } from "zod";
-import { fetchJson } from "./utils.js";
 import { Logger } from "../../logger.js";
+import { Browser } from "../types.js";
+import { PuppeteerBrowserImpl } from "./puppeteer.js";
+import { fetchJson } from "./utils.js";
 
 type CreateGoogleChromeBrowserOptions = {
   findRunningInstanceTimeoutInMs: number;
