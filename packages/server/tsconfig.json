@@ -2,7 +2,7 @@
   "include": ["src/**/*.ts"],
 
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "../../dist/server",
     "lib": ["es2023", "DOM"],
     "module": "node16",
     "target": "es2022",
