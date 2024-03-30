@@ -1,8 +1,16 @@
+import { z } from "zod";
 import {
   BrowserSession,
   BrowserSessionHistoryItem,
 } from "./browser-session.js";
 import { BrowserCommand, BrowserLink } from "./browser/types.js";
+
+export const SessionResponseSchema = z.object({
+  id: z.string().uuid(),
+  createdAt: z.coerce.date(),
+  url: z.string().url(),
+  html: z.string(),
+});
 
 type SessionResponse = {
   id: string;

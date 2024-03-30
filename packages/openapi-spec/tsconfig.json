@@ -9,7 +9,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
+    "paths": {
+      "server": ["../server/dist/index.d.ts"]
+    }
   }
 }

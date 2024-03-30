@@ -5,23 +5,27 @@ import { getSessionById } from "../sessions.js";
 import { HttpNotFoundError } from "../utils/http-errors.js";
 import { RouteParams, createJsonRoute } from "../utils/routes.js";
 
+export const ROUTE_INFO = {
+  method: "DELETE",
+  path: "/sessions/{id}",
+  paramsSchema: {
+    id: z.string().uuid(),
+  },
+};
+
 type DeleteSessionRouteOptions = {
   logger: Logger;
   sessions: BrowserSession[];
 };
 
-export const PARAMS_SCHEMA = {
-  id: z.string().uuid(),
-} as const;
-
-type Params = RouteParams<typeof PARAMS_SCHEMA>;
+type Params = RouteParams<(typeof ROUTE_INFO)["paramsSchema"]>;
 
 export function deleteSessionRoute({
   logger,
   sessions,
 }: DeleteSessionRouteOptions) {
   return createJsonRoute({
-    paramsSchema: PARAMS_SCHEMA,
+    paramsSchema: ROUTE_INFO.paramsSchema,
     logger,
     async handler({ id }: Params) {
       const session = getSessionById(sessions, id);

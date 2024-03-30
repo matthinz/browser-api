@@ -5,13 +5,17 @@ import { Logger } from "../logger.js";
 import { HttpBadRequestError } from "../utils/http-errors.js";
 import { createJsonRoute } from "../utils/routes.js";
 
-export const BODY_SCHEMA = z
-  .object({
-    allowedHosts: z.array(z.string()).optional(),
-  })
-  .optional();
+export const ROUTE_INFO = {
+  method: "POST",
+  path: "/sessions",
+  bodySchema: z
+    .object({
+      allowedHosts: z.array(z.string()).optional(),
+    })
+    .optional(),
+};
 
-type Body = z.infer<typeof BODY_SCHEMA>;
+type Body = z.infer<(typeof ROUTE_INFO)["bodySchema"]>;
 
 type CreateSessionRouteOptions = {
   browser: Browser;
@@ -31,7 +35,7 @@ export const createSessionRoute = ({
   workingDir,
 }: CreateSessionRouteOptions) =>
   createJsonRoute({
-    bodySchema: BODY_SCHEMA,
+    bodySchema: ROUTE_INFO.bodySchema,
     logger,
     async handler(body: Body) {
       if (sessions.length >= maxSessions) {

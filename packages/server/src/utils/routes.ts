@@ -1,11 +1,21 @@
 import { Request, Response } from "express";
-import { z } from "zod";
+import { ZodSchema, ZodType, z } from "zod";
 import { Logger } from "../logger.js";
 import {
   HttpNotFoundError,
   HttpStatusError,
   ZodHttpBadRequestError,
 } from "./http-errors.js";
+
+export const RouteInfoSchema = z.object({
+  method: z.enum(["GET", "POST", "PUT", "DELETE"]).optional(),
+  path: z.string(),
+  bodySchema: z.instanceof(ZodType).optional(),
+  paramsSchema: z.record(z.instanceof(ZodType)).optional(),
+  responseSchema: z.instanceof(ZodType).optional(),
+});
+
+export type RouteInfo = z.infer<typeof RouteInfoSchema>;
 
 export type RouteParamsSchema = {
   [key: string]: z.ZodType<string | number | undefined>;
@@ -81,7 +91,7 @@ export function createJsonRoute<
         ) => Promise<TResult>;
         logger: Logger;
       },
-) : RouteHandler {
+): RouteHandler {
   return createRoute({
     handler(req, res) {
       let promise: Promise<TResult>;

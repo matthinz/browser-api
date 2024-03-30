@@ -1,0 +1,9 @@
+{
+  "name": "client",
+  "version": "0.0.1",
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.13.1",
+    "autorest": "^3.7.1"
+  },
+  "private": true
+}

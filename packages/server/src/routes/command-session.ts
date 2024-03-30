@@ -6,29 +6,32 @@ import { getSessionById } from "../sessions.js";
 import { HttpNotFoundError } from "../utils/http-errors.js";
 import { RouteParams, createJsonRoute } from "../utils/routes.js";
 
+export const ROUTE_INFO = {
+  method: "POST",
+  path: "/sessions/{id}/command",
+  paramsSchema: {
+    id: z.string().uuid(),
+  },
+  bodySchema: z.object({
+    commands: z.array(BrowserCommandSchema),
+  }),
+};
+
 type CommandSessionRouteOptions = {
   logger: Logger;
   sessions: BrowserSession[];
 };
 
-export const BODY_SCHEMA = z.object({
-  commands: z.array(BrowserCommandSchema),
-});
-
-export const PARAMS_SCHEMA = {
-  id: z.string(),
-};
-
-type Body = z.infer<typeof BODY_SCHEMA>;
-type Params = RouteParams<typeof PARAMS_SCHEMA>;
+type Body = z.infer<(typeof ROUTE_INFO)["bodySchema"]>;
+type Params = RouteParams<(typeof ROUTE_INFO)["paramsSchema"]>;
 
 export function commandSessionRoute({
   logger,
   sessions,
 }: CommandSessionRouteOptions) {
   return createJsonRoute({
-    bodySchema: BODY_SCHEMA,
-    paramsSchema: PARAMS_SCHEMA,
+    bodySchema: ROUTE_INFO.bodySchema,
+    paramsSchema: ROUTE_INFO.paramsSchema,
     logger,
     async handler({ id }: Params, { commands }: Body) {
       const session = getSessionById(sessions, id);
