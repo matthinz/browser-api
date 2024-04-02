@@ -5,6 +5,8 @@ import { parseArgs } from "node:util";
 import { createApp } from "./app.js";
 import { RouteInfo, RouteInfoSchema } from "./utils/routes.js";
 
+export { createApp } from "./app.js";
+
 type RouteInfoWithMetadata = RouteInfo & {
   method: "GET" | "POST" | "PUT" | "DELETE";
   name: string;

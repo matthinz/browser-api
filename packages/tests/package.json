@@ -1,0 +1,10 @@
+{
+  "name": "tests",
+  "type": "module",
+  "version": "0.0.1",
+  "dependencies": {
+    "client": "*",
+    "server": "*"
+  },
+  "private": true
+}

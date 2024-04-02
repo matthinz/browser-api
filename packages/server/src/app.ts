@@ -35,6 +35,7 @@ type ScheduleCleanupOptions = {
 
 type RunningApp = {
   port: number;
+  stop: () => Promise<void>;
 };
 
 const DEFAULT_CLEANUP_INTERVAL = 10 * 1000;
@@ -146,8 +147,19 @@ export async function createApp(
 
   return () =>
     new Promise<RunningApp>((resolve) => {
-      app.listen(port, () => {
-        resolve({ port });
+      const stop = () =>
+        new Promise<void>((resolve, reject) => {
+          server.close((err) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve();
+          });
+        });
+
+      const server = app.listen(port, () => {
+        resolve({ port, stop });
       });
     });
 }

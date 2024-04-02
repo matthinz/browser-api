@@ -3,13 +3,17 @@
 
   "compilerOptions": {
     "lib": ["es2023", "DOM"],
-    "module": "NodeNext",
+    "module": "node16",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
+    "paths": {
+      "client": ["../client/dist/index.d.ts"],
+      "server": ["../server/dist/index.d.ts"]
+    }
   }
 }

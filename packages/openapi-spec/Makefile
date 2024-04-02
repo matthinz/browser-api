@@ -9,11 +9,8 @@ build: $(SPEC_FILE)
 clean:
 	rm -rf $(BUILD_DIR) || true
 
-$(SPEC_FILE): $(shell find $(SRC_DIR) -name "*.ts") $(BUILD_SCRIPT)
-	node $(BUILD_SCRIPT) > $@
+$(SPEC_FILE): $(BUILD_SCRIPT)
+	node $(BUILD_SCRIPT) $(BUILD_DIR)
 
-$(BUILD_SCRIPT): $(BUILD_DIR)
+$(BUILD_SCRIPT): $(shell find $(SRC_DIR) -name "*.ts")
 	(rm -rf $(BUILD_DIR) || true) && yarn tsc --outDir $(BUILD_DIR)
-
-$(BUILD_DIR):
-	mkdir -p $@

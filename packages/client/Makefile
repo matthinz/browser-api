@@ -1,21 +1,33 @@
 SRC_DIR=src
+BUILD_DIR=dist
 GENERATED_SRC_DIR=$(SRC_DIR)/generated
-OPENAPI_YML=../browser-api-openapi-spec/dist/openapi.yml
+OPENAPI_JSON=../openapi-spec/dist/openapi.json
 
-build: generate
+.PHONY: build clean generate spec
+
+build: $(BUILD_DIR)
 
 clean:
 	rm -rf $(GENERATED_SRC_DIR) || true
 
-generate: $(OPENAPI_YML) node_modules
+generate: $(GENERATED_SRC_DIR)
+
+spec:
+	cd ../openapi-spec && make clean build
+
+$(OPENAPI_JSON):
+	cd ../openapi-spec && make
+
+$(BUILD_DIR): $(GENERATED_SRC_DIR) $(shell find $(SRC_DIR) -name "*.ts")
+	yarn tsc --outDir $(BUILD_DIR)
+
+$(GENERATED_SRC_DIR):$(OPENAPI_JSON) node_modules
 	yarn openapi-generator-cli generate \
-		-i $(OPENAPI_YML) \
+		-i $(OPENAPI_JSON) \
 		-o $(GENERATED_SRC_DIR) \
 		-g typescript-fetch \
-		--additional-properties=supportsES6=true,typescriptThreePlus=true
+		--additional-properties=supportsES6=true,typescriptThreePlus=true,importFileExtension=.js
 
-$(OPENAPI_YML):
-	cd ../openapi-spec && make
 
 node_modules:
 	yarn && touch $@

@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import { loadRoutes } from "server";
 import yaml from "yaml";
+import { ZodType, any } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 type RouteInfo =
@@ -20,6 +22,7 @@ type OperationObject = {
   description: string;
   operationId: string;
   parameters: ParameterObject[];
+  requestBody?: RequestBodyObject;
   responses: {
     [key: string]: ResponseObject;
   };
@@ -39,12 +42,22 @@ type ParameterObject = {
   schema: any;
 };
 
+type RequestBodyObject = {
+  description: string;
+  content: {
+    "application/json": {
+      schema: any;
+    };
+  };
+  required: boolean;
+};
+
 run.apply(this, process.argv.slice(2)).catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });
 
-async function run(..._args: string[]) {
+async function run(buildDir = ".", ..._args: string[]) {
   const packageJson = JSON.parse(await fs.readFile("package.json", "utf-8"));
 
   const spec = Object.assign(
@@ -58,7 +71,13 @@ async function run(..._args: string[]) {
     buildPaths(await loadRoutes()),
   );
 
-  console.log(yaml.stringify(spec));
+  const yamlFile = path.join(buildDir, "openapi.yml");
+  const jsonFile = path.join(buildDir, "openapi.json");
+
+  await Promise.all([
+    fs.writeFile(yamlFile, yaml.stringify(spec)),
+    fs.writeFile(jsonFile, JSON.stringify(spec, null, 2)),
+  ]);
 }
 
 function buildPaths(routes: RouteInfo[]): PathsObject {
@@ -87,6 +106,7 @@ function buildOperation(routeInfo: RouteInfo): OperationObject {
     operationId: routeInfo.name.replace(/Route$/, ""),
     description: "",
     parameters: buildParameters(routeInfo.paramsSchema),
+    requestBody: buildRequestBody(routeInfo),
     responses: {
       ...successResponse(routeInfo),
     },
@@ -125,8 +145,7 @@ function successResponse(routeInfo: RouteInfo): {
     };
   }
 
-  const schema = zodToJsonSchema(routeInfo.responseSchema);
-  delete schema["$schema"];
+  const schema = buildJsonSchema(routeInfo.responseSchema);
 
   return {
     [statusCode.toString()]: {
@@ -138,4 +157,57 @@ function successResponse(routeInfo: RouteInfo): {
       },
     },
   };
+}
+function buildRequestBody(routeInfo: RouteInfo): RequestBodyObject | undefined {
+  if (routeInfo.method !== "POST" && routeInfo.method !== "PUT") {
+    return;
+  }
+
+  if (!routeInfo.bodySchema) {
+    return;
+  }
+
+  const schema = buildJsonSchema(routeInfo.bodySchema);
+
+  return {
+    description: "",
+    content: {
+      "application/json": { schema },
+    },
+    required: isRequestBodyRequiredForSchema(schema),
+  };
+}
+
+function buildJsonSchema(z: ZodType): any {
+  return zodToJsonSchema(z, { target: "openApi3" });
+}
+
+function isRequestBodyRequiredForSchema(schema: any): boolean {
+  if (!schema || typeof schema !== "object") {
+    return false;
+  }
+
+  const { anyOf } = schema;
+  if (!anyOf || !Array.isArray(anyOf)) {
+    return true;
+  }
+
+  if (anyOf.length !== 2) {
+    return true;
+  }
+
+  const isOptional = anyOf.some((item) => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const { not } = item;
+    if (!not || typeof not !== "object") {
+      return false;
+    }
+
+    return Object.keys(not).length === 0;
+  });
+
+  return !isOptional;
 }

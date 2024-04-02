@@ -1,19 +1,15 @@
 {
+  "include": ["src/**/*.ts"],
+
   "compilerOptions": {
-    "module": "es6",
-    "moduleResolution": "node",
+    "lib": ["es2023", "DOM"],
+    "module": "node16",
+    "target": "es2022",
     "strict": true,
-    "target": "es6",
-    "sourceMap": true,
-    "declarationMap": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es6", "dom"],
     "declaration": true,
-    "outDir": "./dist-esm",
-    "importHelpers": true
-  },
-  "include": ["./src/**/*.ts"],
-  "exclude": ["node_modules"]
+    "moduleResolution": "node16"
+  }
 }
